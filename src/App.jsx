@@ -7,6 +7,7 @@ import Barcode from './components/Barcode';
 import { saveData, loadData, saveConfig, loadConfig, clearData as dbClearData } from './db';
 import { Printer, Loader2, FileDown } from 'lucide-react';
 import { parseExcelFile } from './utils/excelParser';
+import html2pdf from 'html2pdf.js';
 
 const LABEL_SIZES = {
   '40x20': { width: 40, height: 20, titleSize: '8px', footerSize: '7px', priceSize: '8px', padding: '0.5mm 1mm', titleMarginBottom: '0.5mm', footerMarginTop: '0.5mm', barcodeMargin: 2, barcodeHeight: 18, barcodeWidth: 1.2 },
@@ -24,25 +25,26 @@ const PrintStyles = ({ sizeId }) => {
       @page {
         size: ${size.width}mm ${size.height}mm;
       }
-      .label-card {
-        width: ${size.width}mm !important;
-        height: ${size.height}mm !important;
-        padding: ${size.padding} !important;
-      }
-      .label-title {
-        font-size: ${size.titleSize} !important;
-        margin-bottom: ${size.titleMarginBottom} !important;
-      }
-      .barcode-container svg {
-        max-width: ${size.width - size.barcodeMargin}mm !important;
-      }
-      .label-footer {
-        font-size: ${size.footerSize} !important;
-        margin-top: ${size.footerMarginTop} !important;
-      }
-      .label-price {
-        font-size: ${size.priceSize} !important;
-      }
+    }
+
+    #print-area .label-card {
+      width: ${size.width}mm !important;
+      height: ${size.height}mm !important;
+      padding: ${size.padding} !important;
+    }
+    #print-area .label-title {
+      font-size: ${size.titleSize} !important;
+      margin-bottom: ${size.titleMarginBottom} !important;
+    }
+    #print-area .barcode-container svg {
+      max-width: ${size.width - size.barcodeMargin}mm !important;
+    }
+    #print-area .label-footer {
+      font-size: ${size.footerSize} !important;
+      margin-top: ${size.footerMarginTop} !important;
+    }
+    #print-area .label-price {
+      font-size: ${size.priceSize} !important;
     }
   `;
   return <style>{css}</style>;
@@ -118,6 +120,48 @@ function App() {
     }, 1000); // 1s to ensure jsbarcode SVG generation completes
   };
 
+  const triggerPdf = () => {
+    const itemsToPrint = products.filter(p => p.selected && p.copies > 0);
+    if (itemsToPrint.length === 0) return;
+
+    const newTab = window.open('', '_blank');
+    if (!newTab) {
+      alert("الرجاء السماح بالنوافذ المنبثقة (Pop-ups) لعرض ملف PDF.");
+      return;
+    }
+
+    // Add loading text to the new tab
+    newTab.document.write('<html dir="rtl"><head><title>جاري التجهيز...</title></head><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h3>جاري تجهيز ملف PDF، يرجى الانتظار...</h3></body></html>');
+
+    setIsPrinting(true);
+    document.body.classList.add('pdf-mode');
+
+    setTimeout(() => {
+      const element = document.getElementById('print-area');
+      const size = LABEL_SIZES[config.labelSize] || LABEL_SIZES['40x20'];
+
+      const opt = {
+        margin:       0,
+        filename:     'barcodes.pdf',
+        image:        { type: 'jpeg', quality: 1 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: [size.width, size.height], orientation: size.width > size.height ? 'landscape' : 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).output('bloburl').then((pdfUrl) => {
+        newTab.location.href = pdfUrl;
+        document.body.classList.remove('pdf-mode');
+        setIsPrinting(false);
+      }).catch(err => {
+        console.error("PDF generation error:", err);
+        document.body.classList.remove('pdf-mode');
+        setIsPrinting(false);
+        newTab.close();
+        alert("حدث خطأ أثناء تصدير PDF.");
+      });
+    }, 1000); // 1s to allow DOM to update for jsbarcode
+  };
+
   if (loading) return null;
 
   return (
@@ -146,7 +190,7 @@ function App() {
                 المحدد: {selectedCount}
               </span>
               <button
-                onClick={triggerPrint}
+                onClick={triggerPdf}
                 disabled={selectedCount === 0}
                 className="bg-primary hover:bg-primary_dark disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-colors flex items-center gap-2"
               >
@@ -190,7 +234,7 @@ function App() {
 
       {products.length > 0 && selectedCount > 0 && (
         <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 z-50 no-print animate-in fade-in slide-in-from-bottom-10 flex gap-2">
-          <button onClick={triggerPrint} className="flex-1 bg-primary text-white p-4 rounded-2xl font-bold shadow-xl shadow-primary/30 flex justify-center items-center active:scale-95 transition-transform gap-2">
+          <button onClick={triggerPdf} className="flex-1 bg-primary text-white p-4 rounded-2xl font-bold shadow-xl shadow-primary/30 flex justify-center items-center active:scale-95 transition-transform gap-2">
             <FileDown className="w-6 h-6" />
             <span>PDF</span>
           </button>
