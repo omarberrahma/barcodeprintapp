@@ -8,11 +8,50 @@ import { saveData, loadData, saveConfig, loadConfig, clearData as dbClearData } 
 import { Printer, Loader2 } from 'lucide-react';
 import { parseExcelFile } from './utils/excelParser';
 
+const LABEL_SIZES = {
+  '40x30': { width: 40, height: 30, titleSize: '10px', footerSize: '9px', priceSize: '10px', padding: '1.5mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
+  '50x25': { width: 50, height: 25, titleSize: '10px', footerSize: '9px', priceSize: '10px', padding: '1mm 2mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
+  '50x30': { width: 50, height: 30, titleSize: '11px', footerSize: '10px', priceSize: '11px', padding: '1.5mm 2mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
+  '60x40': { width: 60, height: 40, titleSize: '13px', footerSize: '12px', priceSize: '13px', padding: '2mm 3mm', titleMarginBottom: '1.5mm', footerMarginTop: '1.5mm', barcodeMargin: 6 },
+  '100x150': { width: 100, height: 150, titleSize: '24px', footerSize: '20px', priceSize: '24px', padding: '5mm', titleMarginBottom: '5mm', footerMarginTop: '5mm', barcodeMargin: 10 }
+};
+
+const PrintStyles = ({ sizeId }) => {
+  const size = LABEL_SIZES[sizeId] || LABEL_SIZES['50x30'];
+  const css = `
+    @media print {
+      @page {
+        size: ${size.width}mm ${size.height}mm;
+      }
+      .label-card {
+        width: ${size.width}mm !important;
+        height: ${size.height}mm !important;
+        padding: ${size.padding} !important;
+      }
+      .label-title {
+        font-size: ${size.titleSize} !important;
+        margin-bottom: ${size.titleMarginBottom} !important;
+      }
+      .barcode-container svg {
+        max-width: ${size.width - size.barcodeMargin}mm !important;
+      }
+      .label-footer {
+        font-size: ${size.footerSize} !important;
+        margin-top: ${size.footerMarginTop} !important;
+      }
+      .label-price {
+        font-size: ${size.priceSize} !important;
+      }
+    }
+  `;
+  return <style>{css}</style>;
+};
+
 function App() {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
-  const [config, setConfig] = useState({ showName: true, showBarcode: true, showPrice: true });
+  const [config, setConfig] = useState({ showName: true, showBarcode: true, showPrice: true, labelSize: '50x30' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,6 +121,7 @@ function App() {
 
   return (
     <div className="pb-20 md:pb-10 font-sans">
+      <PrintStyles sizeId={config.labelSize} />
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -91,7 +131,9 @@ function App() {
               </div>
               <div>
                 <h1 className="font-bold text-lg leading-tight">طابعة الباركود الذكية</h1>
-                <p className="text-xs text-slate-500">طباعة ملصقات 50×30 مم</p>
+                <p className="text-xs text-slate-500">
+                  طباعة ملصقات {config.labelSize?.replace('x', '×')} مم
+                </p>
               </div>
             </div>
 

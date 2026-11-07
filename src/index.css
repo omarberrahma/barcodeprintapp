@@ -30,10 +30,9 @@
   }
 }
 
-/* Highly Optimized Print CSS for 50x30mm Thermal Labels */
+/* Highly Optimized Print CSS for Thermal Labels */
 @media print {
   @page {
-    size: 50mm 30mm;
     margin: 0;
   }
   body, html {
@@ -57,10 +56,7 @@
   }
 
   .label-card {
-    width: 50mm;
-    height: 30mm;
     box-sizing: border-box;
-    padding: 1.5mm 2mm;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -78,7 +74,6 @@
 
   .label-title {
     font-family: 'Tajawal', sans-serif;
-    font-size: 11px;
     font-weight: 800;
     color: #000;
     white-space: nowrap;
@@ -87,7 +82,6 @@
     width: 100%;
     text-align: center;
     line-height: 1.1;
-    margin-bottom: 1mm;
     direction: rtl;
   }
 
@@ -101,7 +95,6 @@
   }
 
   .barcode-container svg {
-    max-width: 46mm;
     height: 100%;
   }
 
@@ -111,15 +104,12 @@
     align-items: flex-end;
     width: 100%;
     font-family: 'Inter', sans-serif;
-    font-size: 10px;
     font-weight: 700;
     color: #000;
     line-height: 1;
-    margin-top: 1mm;
   }
 
   .label-price {
     font-family: 'Tajawal', sans-serif;
-    font-size: 11px;
   }
 }
