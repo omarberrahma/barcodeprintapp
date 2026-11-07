@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased min-h-screen;
+    direction: rtl;
+  }
+}
+
+@media screen {
+  #print-area {
+    display: none;
+  }
+}
+
+/* Highly Optimized Print CSS for 50x30mm Thermal Labels */
+@media print {
+  @page {
+    size: 50mm 30mm;
+    margin: 0;
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #root, .no-print {
+    display: none !important;
+  }
+  #print-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .label-card {
+    width: 50mm;
+    height: 30mm;
+    box-sizing: border-box;
+    padding: 1.5mm 2mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    page-break-after: always;
+    page-break-inside: avoid;
+    background: white;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .label-card:last-child {
+    page-break-after: auto;
+  }
+
+  .label-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 1mm;
+    direction: rtl;
+  }
+
+  .barcode-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+
+  .barcode-container svg {
+    max-width: 46mm;
+    height: 100%;
+  }
+
+  .label-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+    margin-top: 1mm;
+  }
+
+  .label-price {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 11px;
+  }
+}
