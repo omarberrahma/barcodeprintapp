@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Search, Trash2, FilePlus, Inbox } from 'lucide-react';
+import { Search, Trash2, FilePlus, Inbox, FileSpreadsheet } from 'lucide-react';
+import { exportToExcel } from '../utils/excelParser';
 
 export default function ProductTable({
   products,
@@ -62,10 +63,14 @@ export default function ProductTable({
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end flex-wrap sm:flex-nowrap">
           <button onClick={onClearData} className="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors px-3 py-2 flex items-center gap-1">
             <Trash2 className="w-4 h-4" />
             تغيير الملف
+          </button>
+          <button onClick={() => exportToExcel(products)} className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition shadow-sm flex items-center gap-2">
+            <FileSpreadsheet className="w-4 h-4" />
+            تصدير إكسل
           </button>
           <label className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition shadow-sm flex items-center gap-2">
             <FilePlus className="w-4 h-4" />
