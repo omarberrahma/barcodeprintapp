@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { Search, Trash2, FilePlus, Inbox } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 export default function ProductTable({
   products,

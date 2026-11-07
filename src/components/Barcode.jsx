@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import JsBarcode from 'jsbarcode';
 
-export default function Barcode({ value }) {
+export default function Barcode({ value, width = 1.5, height = 35 }) {
   const barcodeRef = useRef(null);
   const [error, setError] = useState(false);
 
@@ -11,8 +11,8 @@ export default function Barcode({ value }) {
         const safeBarcode = String(value).trim();
         JsBarcode(barcodeRef.current, safeBarcode, {
           format: "CODE128",
-          width: 1.5,
-          height: 35,
+          width: width,
+          height: height,
           displayValue: false,
           margin: 0,
           background: "transparent",
@@ -24,7 +24,7 @@ export default function Barcode({ value }) {
         setError(true);
       }
     }
-  }, [value]);
+  }, [value, width, height]);
 
   if (error) {
     return (

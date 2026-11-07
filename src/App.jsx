@@ -5,10 +5,11 @@ import ProductTable from './components/ProductTable';
 import PrintSettings from './components/PrintSettings';
 import Barcode from './components/Barcode';
 import { saveData, loadData, saveConfig, loadConfig, clearData as dbClearData } from './db';
-import { Printer, Loader2 } from 'lucide-react';
+import { Printer, Loader2, FileDown } from 'lucide-react';
 import { parseExcelFile } from './utils/excelParser';
 
 const LABEL_SIZES = {
+  '40x20': { width: 40, height: 20, titleSize: '8px', footerSize: '7px', priceSize: '8px', padding: '0.5mm 1mm', titleMarginBottom: '0.5mm', footerMarginTop: '0.5mm', barcodeMargin: 2, barcodeHeight: 18, barcodeWidth: 1.2 },
   '40x30': { width: 40, height: 30, titleSize: '10px', footerSize: '9px', priceSize: '10px', padding: '1.5mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
   '50x25': { width: 50, height: 25, titleSize: '10px', footerSize: '9px', priceSize: '10px', padding: '1mm 2mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
   '50x30': { width: 50, height: 30, titleSize: '11px', footerSize: '10px', priceSize: '11px', padding: '1.5mm 2mm', titleMarginBottom: '1mm', footerMarginTop: '1mm', barcodeMargin: 4 },
@@ -51,7 +52,7 @@ function App() {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
-  const [config, setConfig] = useState({ showName: true, showBarcode: true, showPrice: true, labelSize: '50x30' });
+  const [config, setConfig] = useState({ showName: true, showBarcode: true, showPrice: true, labelSize: '40x20' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -147,6 +148,14 @@ function App() {
               <button
                 onClick={triggerPrint}
                 disabled={selectedCount === 0}
+                className="bg-primary hover:bg-primary_dark disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-colors flex items-center gap-2"
+              >
+                <FileDown className="w-5 h-5" />
+                تصدير PDF
+              </button>
+              <button
+                onClick={triggerPrint}
+                disabled={selectedCount === 0}
                 className="bg-secondary hover:bg-secondary_dark disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-colors flex items-center gap-2"
               >
                 <Printer className="w-5 h-5" />
@@ -180,8 +189,12 @@ function App() {
       </main>
 
       {products.length > 0 && selectedCount > 0 && (
-        <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 z-50 no-print animate-in fade-in slide-in-from-bottom-10">
-          <button onClick={triggerPrint} className="w-full bg-secondary text-white p-4 rounded-2xl font-bold shadow-xl shadow-secondary/30 flex justify-between items-center active:scale-95 transition-transform">
+        <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 z-50 no-print animate-in fade-in slide-in-from-bottom-10 flex gap-2">
+          <button onClick={triggerPrint} className="flex-1 bg-primary text-white p-4 rounded-2xl font-bold shadow-xl shadow-primary/30 flex justify-center items-center active:scale-95 transition-transform gap-2">
+            <FileDown className="w-6 h-6" />
+            <span>PDF</span>
+          </button>
+          <button onClick={triggerPrint} className="flex-[2] bg-secondary text-white p-4 rounded-2xl font-bold shadow-xl shadow-secondary/30 flex justify-between items-center active:scale-95 transition-transform">
             <span className="flex items-center gap-2">
               <Printer className="w-6 h-6" />
               طباعة المحدد
@@ -203,18 +216,21 @@ function App() {
       {createPortal(
         <>
           {products.filter(p => p.selected && p.copies > 0).flatMap((p) =>
-            Array.from({ length: p.copies }).map((_, i) => (
-              <div key={`${p.id}-${i}`} className="label-card">
-                {config.showName ? <div className="label-title">{p.designation}</div> : <div style={{height: '11px', marginBottom:'1mm'}}></div>}
-                <div className="barcode-container">
-                   {config.showBarcode ? <Barcode value={p.barcode} /> : null}
+            Array.from({ length: p.copies }).map((_, i) => {
+              const currentSize = LABEL_SIZES[config.labelSize] || LABEL_SIZES['40x20'];
+              return (
+                <div key={`${p.id}-${i}`} className="label-card">
+                  {config.showName ? <div className="label-title">{p.designation}</div> : <div style={{height: currentSize.titleSize, marginBottom: currentSize.titleMarginBottom}}></div>}
+                  <div className="barcode-container">
+                     {config.showBarcode ? <Barcode value={p.barcode} width={currentSize.barcodeWidth || 1.5} height={currentSize.barcodeHeight || 35} /> : null}
+                  </div>
+                  <div className="label-footer" style={{ justifyContent: config.showPrice ? 'space-between' : 'center' }}>
+                    <span>{config.showBarcode ? p.barcode : ''}</span>
+                    {config.showPrice && p.price ? <span className="label-price">{p.price} دج</span> : null}
+                  </div>
                 </div>
-                <div className="label-footer">
-                  <span>{config.showBarcode ? p.barcode : ''}</span>
-                  {config.showPrice && p.price ? <span className="label-price">{p.price} دج</span> : <span></span>}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </>,
         document.getElementById('print-area')

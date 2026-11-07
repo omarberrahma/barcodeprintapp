@@ -22,10 +22,11 @@ export default function PrintSettings({ config, setConfig }) {
           مقاس الملصق الحراري
         </label>
         <select
-          value={config.labelSize || '50x30'}
+          value={config.labelSize || '40x20'}
           onChange={handleSizeChange}
           className="block w-full max-w-xs px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
         >
+          <option value="40x20">40 × 20 مم (4x2 سم)</option>
           <option value="40x30">40 × 30 مم (4x3 سم)</option>
           <option value="50x25">50 × 25 مم (5x2.5 سم)</option>
           <option value="50x30">50 × 30 مم (5x3 سم)</option>
