@@ -73,3 +73,21 @@ const processExcelData = (json, append, onDataLoaded, setErrorMsg) => {
   setErrorMsg('');
   onDataLoaded(newProducts, append);
 };
+
+export const exportToExcel = async (products) => {
+  if (!products || products.length === 0) return;
+  const XLSX = await import('xlsx');
+
+  const data = products.map((p) => ({
+    'الاسم': p.designation,
+    'الباركود': p.barcode,
+    'السعر': p.price || '',
+    'النسخ': p.copies
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'المنتجات');
+
+  XLSX.writeFile(workbook, 'products_export.xlsx');
+};
